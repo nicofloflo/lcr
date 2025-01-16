@@ -1,2 +1,4 @@
-# LethalCompanyTemplate
-A template for a BepInEx 5 Plugin, using the correct .csproj configuration for Lethal Company modding
+# Lethal Company Randomizer
+Please download the dependencies needed which is Lethal Company Network API Thank you!
+
+I'll add more to this later
