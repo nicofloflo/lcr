@@ -12,12 +12,13 @@ using UnityEngine;
 namespace LethalCompanyRandomizer
 {
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
+    [BepInDependency("LethalNetworkAPI")]
     public class Plugin : BaseUnityPlugin
     {
 
         private const string PLUGIN_GUID = "Randomizer";
         private const string PLUGIN_NAME = "Lethal Company Randomizer";
-        private const string PLUGIN_VERSION = "1.0.0";
+        private const string PLUGIN_VERSION = "1.0.4";
 
 
 
@@ -29,9 +30,9 @@ namespace LethalCompanyRandomizer
 
 
             UnityEngine.Debug.Log($"I'm a cowboy");
-            harmony.PatchAll(typeof(changescrap));
-            harmony.PatchAll(typeof(changemapobjects));
-            harmony.PatchAll(typeof(changeoutsideenemies));
+            harmony.PatchAll(typeof(ChangeScrap));
+            harmony.PatchAll(typeof(ChangeMapObjects));
+            harmony.PatchAll(typeof(ChangeOutsideEnemies));
             harmony.PatchAll(typeof(ChangeInsideEnemies));
             harmony.PatchAll(typeof(ChangeText));
 
