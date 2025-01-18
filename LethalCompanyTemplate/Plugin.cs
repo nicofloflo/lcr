@@ -35,6 +35,7 @@ namespace LethalCompanyRandomizer
             harmony.PatchAll(typeof(ChangeOutsideEnemies));
             harmony.PatchAll(typeof(ChangeInsideEnemies));
             harmony.PatchAll(typeof(ChangeText));
+           
 
 
         }

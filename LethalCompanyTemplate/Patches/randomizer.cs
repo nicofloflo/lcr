@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel.Design.Serialization;
+using System.Runtime.CompilerServices;
 using BepInEx;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LethalNetworkAPI;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking.PlayerConnection;
 using Random = System.Random;
@@ -20,6 +22,11 @@ namespace Randomizer.Patches
 		[HarmonyPrefix]
 		public static void RandomizeScrap(RoundManager __instance)
 		{
+			if (StartOfRound.Instance.currentLevel.levelID == 3 && StartOfRound.Instance.currentLevel.PlanetName == "71 Gordion")
+			{
+				PickedLevel = StartOfRound.Instance.levels[2];
+				return;
+			};
 			Random random = new Random();
 			int num = random.Next(0, __instance.playersManager.levels.Length);
 			while (__instance.playersManager.levels[num].PlanetName == "71 Gordion")
@@ -27,6 +34,7 @@ namespace Randomizer.Patches
 				int num2 = random.Next(0, __instance.playersManager.levels.Length);
 				num = num2;
 			}
+
 			__instance.currentLevel = __instance.playersManager.levels[num];
 			PickedLevel = __instance.currentLevel;
 		}
@@ -42,15 +50,12 @@ namespace Randomizer.Patches
 		public static void ChangeLevel(RoundManager __instance)
 		{
 			SelectableLevel pickedLevel = ChangeScrap.PickedLevel;
-			Debug.Log(pickedLevel + "this is what im looking for");
-			Debug.Log(__instance.currentLevel + "this is what im looking for");
 			__instance.currentLevel = pickedLevel;
 		}
 		[HarmonyPatch(typeof(RoundManager), "DespawnPropsAtEndOfRound")]
 		[HarmonyPrefix]
 		public static void ChangeBackPropsAtEndOfRound(RoundManager __instance)
 		{
-			Debug.Log(__instance.currentLevel.PlanetName + "/" + StartOfRound.Instance.currentLevel.PlanetName);
 			__instance.currentLevel.levelID = StartOfRound.Instance.currentLevel.levelID;
 		}
 
@@ -68,10 +73,10 @@ namespace Randomizer.Patches
 		}
 
 		[HarmonyPatch(typeof(RoundManager), "LoadNewLevel")]
-		[HarmonyPrefix]
+		[HarmonyPostfix]
 		public static void ChangeRandomNumber(RoundManager __instance)
 		{
-			ORLevel = RandomLevel();
+			ORLevel = __instance.currentLevel.PlanetName != "71 Gordion" ? RandomLevel() : __instance.currentLevel;
 		}
 
 		[HarmonyPatch(typeof(RoundManager), "PredictAllOutsideEnemies")]
@@ -79,7 +84,6 @@ namespace Randomizer.Patches
 		public static void ChangeOutsideEnemiesInGame(RoundManager __instance)
 		{
 			__instance.currentLevel = ORLevel;
-			Debug.Log((object)("Outside Enemies: " + __instance.currentLevel.PlanetName));
 		}
 
 		[HarmonyPatch(typeof(RoundManager), "SpawnEnemiesOutside")]
@@ -87,7 +91,6 @@ namespace Randomizer.Patches
 		public static void SpawnOutsideEnemies(RoundManager __instance)
 		{
 			__instance.currentLevel = ORLevel;
-			Debug.Log((object)("Outside Enemies: " + __instance.currentLevel.PlanetName));
 		}
 
 		[HarmonyPatch(typeof(RoundManager), "SpawnRandomOutsideEnemy")]
@@ -103,53 +106,58 @@ namespace Randomizer.Patches
 		{
 			__instance.currentLevel.maxOutsideEnemyPowerCount = ORLevel.maxOutsideEnemyPowerCount;
 		}
+		
 	}
 	public class ChangeInsideEnemies
 	{
 		public static SelectableLevel RLevel = RandomLevel();
 
-		public static SelectableLevel RandomLevel()
+		private static SelectableLevel RandomLevel()
 		{
 			Random random = new Random();
 			int num = random.Next(0, RoundManager.Instance.playersManager.levels.Length);
 			return RoundManager.Instance.playersManager.levels[num];
 		}
 
-		[HarmonyPatch(typeof(RoundManager), "LoadNewLevel")]
+		[HarmonyPatch(typeof(RoundManager), "FinishGeneratingNewLevelClientRpc")]
 		[HarmonyPrefix]
 		public static void ChangeRandomNumber(RoundManager __instance)
 		{
-			RLevel = RandomLevel();
+			
+			RLevel = __instance.currentLevel.PlanetName != "71 Gordion" ? RandomLevel() : __instance.currentLevel;
+			
 		}
-
+// LLL issue was found here
 		[HarmonyPatch(typeof(RoundManager), "PlotOutEnemiesForNextHour")]
 		[HarmonyPrefix]
 		public static void PlotOutEnemiesForNextHour(RoundManager __instance)
 		{
-			__instance.currentLevel = RLevel;
+			__instance.currentLevel.enemySpawnChanceThroughoutDay = RLevel.enemySpawnChanceThroughoutDay;
+			__instance.currentLevel.spawnProbabilityRange = RLevel.spawnProbabilityRange;
+			
 		}
-
+		
 		[HarmonyPatch(typeof(RoundManager), "AssignRandomEnemyToVent")]
 		[HarmonyPrefix]
 		public static void AssignRandomEnemyToVent(RoundManager __instance)
 		{
 			__instance.currentLevel = RLevel;
 		}
-
+		
 		[HarmonyPatch(typeof(RoundManager), "EnemyCannotBeSpawned")]
 		[HarmonyPrefix]
 		public static void EnemyCannotBeSpawned(RoundManager __instance)
 		{
 			__instance.currentLevel = RLevel;
 		}
-
+		// LLL issue was found here
 		[HarmonyPatch(typeof(RoundManager), "BeginEnemySpawning")]
 		[HarmonyPrefix]
 		public static void BeginEnemySpawning(RoundManager __instance)
 		{
-			__instance.currentLevel = RLevel;
+			__instance.currentLevel.maxEnemyPowerCount = RLevel.maxEnemyPowerCount;
 		}
-
+		
 		[HarmonyPatch(typeof(RoundManager), "RefreshEnemiesList")]
 		[HarmonyPrefix]
 		public static void RefreshEnemyList(RoundManager __instance)
@@ -197,7 +205,7 @@ namespace Randomizer.Patches
 		[HarmonyPostfix]
 		public static void Update(StartOfRound __instance)
 		{
-			
+		
 		try
 		{
 			__instance.gameStats.allPlayerStats[0].playerNotes.Clear();
