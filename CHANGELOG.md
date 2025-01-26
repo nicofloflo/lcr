@@ -27,3 +27,7 @@ Version 1.0.5
 Version 1.0.6
 
 - Fixed issue (hopefully) where you could be stuck at company building in LLL because a dungeon tries to spawn on the company building.
+
+Version 1.0.7
+
+- HOPEFULLY fixed an issue in LLL you could soft lock due to a dungeon trying to spawn (please make it so I fixed this bug please please please and didn't create a whole other mess to fix)
