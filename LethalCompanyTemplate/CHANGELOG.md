@@ -31,3 +31,8 @@ Version 1.0.6
 Version 1.0.7
 
 - HOPEFULLY fixed an issue in LLL you could soft lock due to a dungeon trying to spawn (please make it so I fixed this bug please please please and didn't create a whole other mess to fix)
+
+Version 1.0.8
+
+- Reverted mod to 1.0.3 + the networking, 1.0.3 had LLL that worked and enemies were actually spawning I rather be incompatible with one mod than not have my mod work at all. 
+- Sorry Lethal Casino Enjoyers until I figure out the LLL problem this mod will be incompatible with it.

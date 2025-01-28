@@ -17,7 +17,7 @@ namespace LethalCompanyRandomizer
     {
         private const string PLUGIN_GUID = "Randomizer";
         private const string PLUGIN_NAME = "Lethal Company Randomizer";
-        private const string PLUGIN_VERSION = "1.0.7";
+        private const string PLUGIN_VERSION = "1.0.8";
         private readonly Harmony harmony = new Harmony(PLUGIN_GUID);
         private void Awake()
         {

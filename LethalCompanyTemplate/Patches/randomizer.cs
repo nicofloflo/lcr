@@ -18,29 +18,24 @@ namespace Randomizer.Patches
 	public class ChooseRandom
 	{
 		public static SelectableLevel RealLevel;
-		public static SelectableLevel ScrapLevel = RandomLevel();
-		public static SelectableLevel IndoorEnemiesLevel = RandomLevel();
-		public static SelectableLevel OutdoorEnemiesLevel = RandomLevel();
+		public static SelectableLevel ScrapLevel;
+		public static SelectableLevel IndoorEnemiesLevel;
+		public static SelectableLevel OutdoorEnemiesLevel;
 		
-		private static SelectableLevel RandomLevel()
-		{
-			Random random = new Random();
-			int num = random.Next(0, RoundManager.Instance.playersManager.levels.Length);
-			return RoundManager.Instance.playersManager.levels[num];
-		}
-
 		[HarmonyPatch(typeof(RoundManager), "LoadNewLevel")]
 		[HarmonyPrefix]
 
 		public static void Randomize(RoundManager __instance)
 		{
 			RealLevel = __instance.currentLevel;
-			ScrapLevel = RandomLevel();
-			IndoorEnemiesLevel = RandomLevel();
-			OutdoorEnemiesLevel = RandomLevel();
-			
-
-
+			ScrapLevel =  RoundManager.Instance.playersManager.levels[new Random().Next(0, RoundManager.Instance.playersManager.levels.Length)];
+			IndoorEnemiesLevel =  RoundManager.Instance.playersManager.levels[new Random().Next(0, RoundManager.Instance.playersManager.levels.Length)];
+			OutdoorEnemiesLevel =  RoundManager.Instance.playersManager.levels[new Random().Next(0, RoundManager.Instance.playersManager.levels.Length)];
+			while (OutdoorEnemiesLevel.PlanetName == "44 Liquidation")
+			{
+				OutdoorEnemiesLevel =  RoundManager.Instance.playersManager.levels[new Random().Next(0, RoundManager.Instance.playersManager.levels.Length)];
+				Debug.Log(OutdoorEnemiesLevel.PlanetName + " was liquidation before");
+			}
 		}
 	}
 
@@ -75,28 +70,14 @@ namespace Randomizer.Patches
 			
 			while (ChooseRandom.ScrapLevel.PlanetName == "71 Gordion")
 			{
-				Random random = new Random();
-				int num2 = random.Next(0, __instance.playersManager.levels.Length);
-				
-				ChooseRandom.ScrapLevel = __instance.playersManager.levels[num2];
-				
+				ChooseRandom.ScrapLevel = RoundManager.Instance.playersManager.levels[new Random().Next(0, RoundManager.Instance.playersManager.levels.Length)];
 			}
 			
 			Debug.Log(ChooseRandom.ScrapLevel.PlanetName);
-
 			__instance.currentLevel = ChooseRandom.ScrapLevel;
 			PickedLevel = __instance.currentLevel;
 		}
-
 		
-			[HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
-			[HarmonyPostfix]
-			public static void ChangeBackToOriginalLevel(RoundManager __instance)
-			{
-				
-				__instance.currentLevel = ChooseRandom.RealLevel;
-				
-			}
 		
 	}
 	public class ChangeMapObjects
@@ -111,159 +92,86 @@ namespace Randomizer.Patches
 			
 			Debug.Log(__instance.currentLevel.PlanetName);
 		}
-		[HarmonyPatch(typeof(RoundManager), "SpawnMapObjects")]
-		[HarmonyPostfix]
-		public static void ChangeLevelPostFix(RoundManager __instance)
-		{
-			
-			__instance.currentLevel = ChooseRandom.RealLevel;
-			
-			Debug.Log(__instance.currentLevel.PlanetName);
-		}
-		
-		
-		
-		[HarmonyPatch(typeof(RoundManager), "DespawnPropsAtEndOfRound")]
-		[HarmonyPrefix]
-		public static void ChangeBackPropsAtEndOfRound(RoundManager __instance)
-		{
-			
-			Debug.Log(StartOfRound.Instance.currentLevel.PlanetName);
-			Debug.Log(__instance.currentLevel.PlanetName);
-			__instance.currentLevel.levelID = ChooseRandom.RealLevel.levelID;
-			Debug.Log(__instance.currentLevel.levelID);
-		}
-	
-		
 	}
 	public class ChangeOutsideEnemies
 	{
-		[HarmonyPatch(typeof(RoundManager), "PredictAllOutsideEnemies")]
+		[HarmonyPatch(typeof (RoundManager), "PredictAllOutsideEnemies")]
 		[HarmonyPrefix]
-		public static void ChangeOutsideEnemiesInGame(RoundManager __instance)
+		public static void ChooseOutsideEnemies(RoundManager __instance)
 		{
-			Debug.Log(__instance.currentMaxOutsidePower);
 			__instance.currentLevel = ChooseRandom.OutdoorEnemiesLevel;
-			Debug.Log(__instance.currentMaxOutsidePower);
-			Debug.Log(__instance.currentLevel);
-		}
-		
-		[HarmonyPatch(typeof(RoundManager), "PredictAllOutsideEnemies")]
-		[HarmonyPostfix]
-		public static void ChangeOutsideEnemiesInGamePostFix(RoundManager __instance)
-		{
-			__instance.currentLevel = ChooseRandom.RealLevel;
+			Debug.Log((object) ("Outside Enemies: " + __instance.currentLevel.PlanetName));
 		}
 
-		[HarmonyPatch(typeof(RoundManager), "SpawnEnemiesOutside")]
+		[HarmonyPatch(typeof (RoundManager), "SpawnEnemiesOutside")]
 		[HarmonyPrefix]
 		public static void SpawnOutsideEnemies(RoundManager __instance)
 		{
 			__instance.currentLevel = ChooseRandom.OutdoorEnemiesLevel;
-			Debug.Log(__instance.currentMaxOutsidePower);
-			Debug.Log(__instance.currentLevel);
-			Debug.Log(__instance.currentOutsideEnemyPower);
-		}
-		[HarmonyPatch(typeof(RoundManager), "SpawnEnemiesOutside")]
-		[HarmonyPostfix]
-		public static void SpawnOutsideEnemiesPostFix(RoundManager __instance)
-		{
-			
-			__instance.currentLevel = ChooseRandom.RealLevel;
+			Debug.Log((object) ("Outside Enemies: " + __instance.currentLevel.PlanetName));
 		}
 
-		[HarmonyPatch(typeof(RoundManager), "SpawnRandomOutsideEnemy")]
+		[HarmonyPatch(typeof (RoundManager), "SpawnRandomOutsideEnemy")]
 		[HarmonyPrefix]
 		public static void SpawnOutsideEnemy(RoundManager __instance)
 		{
 			__instance.currentLevel = ChooseRandom.OutdoorEnemiesLevel;
 		}
-		[HarmonyPatch(typeof(RoundManager), "SpawnRandomOutsideEnemy")]
-		[HarmonyPostfix]
-		public static void SpawnOutsideEnemyPostFix(RoundManager __instance)
-		{
-			Debug.Log(__instance.currentMaxOutsidePower);
-			Debug.Log(__instance.currentLevel);
-			Debug.Log(__instance.currentOutsideEnemyPower);
-			__instance.currentLevel = ChooseRandom.RealLevel;
-		}
 
-		[HarmonyPatch(typeof(RoundManager), "RefreshEnemiesList")]
+		[HarmonyPatch(typeof (RoundManager), "RefreshEnemiesList")]
 		[HarmonyPrefix]
 		public static void RefreshEnemyList(RoundManager __instance)
 		{
 			__instance.currentLevel.maxOutsideEnemyPowerCount = ChooseRandom.OutdoorEnemiesLevel.maxOutsideEnemyPowerCount;
 		}
-		
 	}
 	public class ChangeInsideEnemies
 	{
 		
 // LLL issue was found here
-		[HarmonyPatch(typeof(RoundManager), "PlotOutEnemiesForNextHour")]
+		[HarmonyPatch(typeof (RoundManager), "PlotOutEnemiesForNextHour")]
 		[HarmonyPrefix]
 		public static void PlotOutEnemiesForNextHour(RoundManager __instance)
 		{
-			__instance.currentLevel.enemySpawnChanceThroughoutDay = ChooseRandom.IndoorEnemiesLevel.enemySpawnChanceThroughoutDay;
-			__instance.currentLevel.spawnProbabilityRange = ChooseRandom.IndoorEnemiesLevel.spawnProbabilityRange;
+			__instance.currentLevel = ChooseRandom.IndoorEnemiesLevel;
 		}
-		
-		[HarmonyPatch(typeof(RoundManager), "AssignRandomEnemyToVent")]
+
+		[HarmonyPatch(typeof (RoundManager), "AssignRandomEnemyToVent")]
 		[HarmonyPrefix]
 		public static void AssignRandomEnemyToVent(RoundManager __instance)
 		{
 			__instance.currentLevel = ChooseRandom.IndoorEnemiesLevel;
-			__instance.currentLevel.Enemies = ChooseRandom.IndoorEnemiesLevel.Enemies;
-			Debug.Log(__instance.currentLevel);
-			Debug.Log(__instance.currentMaxInsidePower);
 		}
-		[HarmonyPatch(typeof(RoundManager), "AssignRandomEnemyToVent")]
-		[HarmonyPostfix]
-		public static void AssignRandomEnemyToVentPostFix(RoundManager __instance)
-		{
-			__instance.currentLevel = ChooseRandom.RealLevel;
-		}
-		
-		[HarmonyPatch(typeof(RoundManager), "EnemyCannotBeSpawned")]
+
+		[HarmonyPatch(typeof (RoundManager), "EnemyCannotBeSpawned")]
 		[HarmonyPrefix]
 		public static void EnemyCannotBeSpawned(RoundManager __instance)
 		{
 			__instance.currentLevel = ChooseRandom.IndoorEnemiesLevel;
 		}
-		
-		[HarmonyPatch(typeof(RoundManager), "EnemyCannotBeSpawned")]
-		[HarmonyPostfix]
-		public static void EnemyCannotBeSpawnedPostFix(RoundManager __instance)
-		{
-			__instance.currentLevel = ChooseRandom.RealLevel;
-		}
-		// LLL issue was found here
-		[HarmonyPatch(typeof(RoundManager), "BeginEnemySpawning")]
+
+		[HarmonyPatch(typeof (RoundManager), "BeginEnemySpawning")]
 		[HarmonyPrefix]
 		public static void BeginEnemySpawning(RoundManager __instance)
 		{
-			__instance.currentLevel.maxEnemyPowerCount = ChooseRandom.IndoorEnemiesLevel.maxEnemyPowerCount;
+			__instance.currentLevel = ChooseRandom.IndoorEnemiesLevel;
 		}
-		
-		[HarmonyPatch(typeof(RoundManager), "RefreshEnemiesList")]
+
+		[HarmonyPatch(typeof (RoundManager), "RefreshEnemiesList")]
 		[HarmonyPrefix]
 		public static void RefreshEnemyList(RoundManager __instance)
 		{
 			__instance.currentLevel.maxEnemyPowerCount = ChooseRandom.IndoorEnemiesLevel.maxEnemyPowerCount;
 		}
+	
 	}
 	public class ChangeText
 	{
 		private static LNetworkMessage<string> EventMessage = LNetworkMessage<string>.Connect("ServerSendAnnouncment");
-		private static string pickedPlanetScrap;
-		private static string pickedPlanetEnemies;
-		private static string pickedPlanetOutside;
-
-// Static constructor to ensure the handler is registered only once
-	
+		private static string _planetScrap;
+		private static string _planetEnemies;
+		private static string _planetOutside;
 		
-		
-
 		[HarmonyPatch(typeof(StartOfRound), "ShipHasLeft")]
 		[HarmonyPrefix]
 		public static void SendPlanets(StartOfRound __instance)
@@ -272,14 +180,14 @@ namespace Randomizer.Patches
 			{
 
 				EventMessage.OnClientReceived += EventMessageOnOnClientReceived;
-				// Validate the data
-				var scrap = ChooseRandom.ScrapLevel.PlanetName ?? "Unknown";
-				var enemies = ChooseRandom.IndoorEnemiesLevel.PlanetName ?? "Unknown";
-				var outside = ChooseRandom.OutdoorEnemiesLevel.PlanetName ?? "Unknown";
-
-				// Send the message to clients
-				EventMessage.SendClients($"{scrap}/{enemies}/{outside}");
-			
+				
+				if (__instance.IsServer)
+				{
+					var scrap = ChooseRandom.ScrapLevel.PlanetName ?? "Unknown";
+					var enemies = ChooseRandom.IndoorEnemiesLevel.PlanetName ?? "Unknown";
+					var outside = ChooseRandom.OutdoorEnemiesLevel.PlanetName ?? "Unknown";
+					EventMessage.SendClients($"{scrap}/{enemies}/{outside}");
+				}
 				
 				EventMessage.OnClientReceived -= EventMessageOnOnClientReceived;
 			}
@@ -297,9 +205,9 @@ namespace Randomizer.Patches
 		try
 		{
 			__instance.gameStats.allPlayerStats[0].playerNotes.Clear();
-			__instance.gameStats.allPlayerStats[0].playerNotes.Add("S:" + pickedPlanetScrap);
-			__instance.gameStats.allPlayerStats[0].playerNotes.Add("IE:" + pickedPlanetEnemies);
-			__instance.gameStats.allPlayerStats[0].playerNotes.Add("OE:" + pickedPlanetOutside);
+			__instance.gameStats.allPlayerStats[0].playerNotes.Add("S:" + _planetScrap);
+			__instance.gameStats.allPlayerStats[0].playerNotes.Add("IE:" + _planetEnemies);
+			__instance.gameStats.allPlayerStats[0].playerNotes.Add("OE:" + _planetOutside);
 		}
 		catch (Exception ex)
 		{
@@ -308,14 +216,13 @@ namespace Randomizer.Patches
 		}
 		private static void EventMessageOnOnClientReceived(string obj)
 		{
-			
 			string[] pickedPlanets = obj.Split('/');
 			
 			Debug.Log("EventMessageOnOnClientReceived: " + pickedPlanets[0] + "/" + pickedPlanets[1] + "/" + pickedPlanets[2]);
 
-			pickedPlanetScrap = pickedPlanets[0];
-			pickedPlanetEnemies = pickedPlanets[1];
-			pickedPlanetOutside = pickedPlanets[2];
+			_planetScrap = pickedPlanets[0];
+			_planetEnemies = pickedPlanets[1];
+			_planetOutside = pickedPlanets[2];
 			
 		}
 
